@@ -3,13 +3,13 @@
 nextflow.enable.dsl=2
 
 params.reads = 'data/*_{1,2}.fq.gz'
-params.outdir = 'outputs/'
+params.outDir = 'outputs/'
 params.adapters = 'adapters.fa'
 log.info """
       LIST OF PARAMETERS
 ================================
 Reads            : ${params.reads}
-Output-folder    : ${params.outdir}
+Output-folder    : ${params.outDir}
 Adapters         : ${params.adapters}
 """
 
@@ -56,7 +56,7 @@ process trimmomatic {
 workflow {
     read_pairs_ch.view()
     fastqc(read_pairs_ch)
-    trimmomatic(read_pairs_ch)
+    trimmomatic(read_pairs_ch, adapter_ch)
 }
 
 
