@@ -2,7 +2,7 @@
 
 nextflow.enable.dsl=2
 
-params.reads = 'data/*_{1,2}.fq.gz'
+params.reads = '*_{1,2}.fq.gz'
 params.outdir = 'outputs/'
 params.adapters = 'adapters.fa'
 log.info """
@@ -15,11 +15,11 @@ Adapters         : ${params.adapters}
 
 // Create read channel
 read_pairs_ch = Channel.fromFilePairs(params.reads, checkIfExists: true).map { sample, reads -> tuple(sample, reads.collect { it.toAbsolutePath() }) }
-read_pairs_ch.view()
 adapter_ch = Channel.fromPath(params.adapters)
 
 // Define fastqc process
 process fastqc {
+label "fastqc"
     publishDir "${params.outdir}/quality-control-${sample}/", mode: 'copy', overwrite: true
 
     input:
@@ -36,6 +36,7 @@ process fastqc {
 
 // Process trimmomatic
 process trimmomatic {
+label "trimmomatic"
     publishDir "${params.outdir}/trimmed-reads-${sample}/", mode: 'copy'
 
     input:
@@ -48,8 +49,11 @@ process trimmomatic {
 
     script:
     """
-    trimmomatic PE -phred33 ${reads[0]} ${reads[1]} ${sample}_1.trimmed.fq.gz ${sample}_1.discarded.fq.gz ${sample}_2.trimmed.fq.gz ${sample}_2.discarded.fq.gz 
-    ILLUMINACLIP:${adapters_file}:2:30:10
+    trimmomatic PE -phred33 \
+	${reads[0]} ${reads[1]} \
+	${sample}_1.trimmed.fq.gz ${sample}_1.discarded.fq.gz \
+	${sample}_2.trimmed.fq.gz ${sample}_2.discarded.fq.gz \
+	ILLUMINACLIP:${adapters_file}:2:30:10
     """
 }
 
@@ -59,5 +63,4 @@ workflow {
     fastqc(read_pairs_ch)
     trimmomatic(read_pairs_ch, adapter_ch)
 }
-
 
