@@ -75,7 +75,7 @@ process index_reference {
 
     script:
     """
-    /root/miniconda3/envs/nf_course/bin/bwa-mem2 index ${reference_file}
+    bwa-mem2 index ${reference_file}
     """
 }
 
@@ -93,7 +93,7 @@ process alignment {
 
     script:
     """
-    /root/miniconda3/envs/nf_course/bin/bwa-mem2 mem ${reference_file} ${trimmed_reads[0]} ${trimmed_reads[1]} > ${sample}.sam
+    bwa-mem2 mem ${reference_file} ${trimmed_reads[0]} ${trimmed_reads[1]} > ${sample}.sam
     """
 }
 

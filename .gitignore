@@ -2,3 +2,5 @@ work/
 .nextflow/
 .nextflow.log*
 outputs/
+outputs_modular/
+.nextflow*
