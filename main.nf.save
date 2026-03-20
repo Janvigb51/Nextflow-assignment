@@ -1,4 +1,4 @@
-#!/usr/bin/env nextflow
+${trimmed_reads[0]} ${trimmed_reads[1]}#!/usr/bin/env nextflow
 
 nextflow.enable.dsl=2
 
@@ -16,11 +16,11 @@ Adapters         : ${params.adapters}
 Reference-genome : ${params.reference}
 """
 
-// Create channels
+// Create read channel
 read_pairs_ch = Channel.fromFilePairs(params.reads, checkIfExists: true).map { sample, reads -> tuple(sample, reads.collect { it.toAbsolutePath() }) }
 adapter_ch = Channel.fromPath(params.adapters)
 reference_ch = Channel.fromPath(params.reference, checkIfExists: true)
-reference_prefix = file(params.reference).name
+reference_prefix = file(params.reference).simpleName
 
 // Define fastqc process
 process fastqc {
@@ -62,23 +62,6 @@ label "trimmomatic"
     """
 }
 
-//Process index
-process index_reference {
-    label "bwamem2"
-    publishDir "${params.outdir}/reference-index/", mode: 'copy', overwrite: true
-
-    input:
-    path reference_file
-
-    output:
-    tuple path(reference_file), path("${reference_file}.*")
-
-    script:
-    """
-    /root/miniconda3/envs/nf_course/bin/bwa-mem2 index ${reference_file}
-    """
-}
-
 // Process alignment
 process alignment {
     label "bwamem2"
@@ -86,24 +69,23 @@ process alignment {
     
     input:
     tuple val(sample), path(trimmed_reads)
-    tuple path(reference_file), path(index_files)
+    path reference_file
+    val reference_prefix
 
     output:
     tuple val(sample), path("${sample}.sam")
 
     script:
     """
-    /root/miniconda3/envs/nf_course/bin/bwa-mem2 mem ${reference_file} ${trimmed_reads[0]} ${trimmed_reads[1]} > ${sample}.sam
+    bwa-mem2 mem ${refernce_prefix} ${trimmed_reads[0]} ${trimmed_reads[1]} > ${sample}.sam
     """
 }
-
 
 // Run the workflow
 workflow {
     read_pairs_ch.view()
     fastqc(read_pairs_ch)
     trimmomatic(read_pairs_ch, adapter_ch)
-    indexed_ref_ch = index_reference(reference_ch)
-    alignment(trimmomatic.out.trimmed_fq, indexed_ref_ch)
+    alignment(trimmomatic.out.trimmed_fq, reference_ch, reference_prefix)
 }
 
