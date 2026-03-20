@@ -18,7 +18,7 @@ Some of the errors faced & fixed:
 5) Two new processes were added: indexing and alignment  
 6) Labels were added for each of the 4 processes (refer to the nextflow.config file for more details)  
 7) Emit labels were added to the trimmomatic outputs to further access them in downstream processes, like the alignment  
-8) The script in trimmomatic process was split across 2 lines, so we used line continuation (\) to maintain correct command formatting  
+8) The script in trimmomatic process was split across 2 lines, so we used line continuation to maintain correct command formatting  
 9) The bwa-mem2 tool was not being recognised, so we provided full paths in the indexing and alignment scripts  
 10) Corrected the typo in the nextflow.config file, and then we were able to remove the full paths and run the pipeline again  
 
